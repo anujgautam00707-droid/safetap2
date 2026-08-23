@@ -5,5 +5,6 @@ data class LocationResult(
     val longitude: Double,
     val accuracy: Float,
     val isLastKnownLocation: Boolean,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val isApproximate: Boolean = false
 )

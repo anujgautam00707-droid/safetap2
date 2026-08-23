@@ -12,17 +12,21 @@ class DefaultPermissionChecker(
 ) : PermissionChecker {
 
     override fun hasLocationPermission(): Boolean {
-        val fineLocation = ContextCompat.checkSelfPermission(
+        return hasFineLocationPermission() || hasCoarseLocationPermission()
+    }
+
+    override fun hasFineLocationPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
+    }
 
-        val coarseLocation = ContextCompat.checkSelfPermission(
+    override fun hasCoarseLocationPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
-
-        return fineLocation || coarseLocation
     }
 
     override fun hasNotificationPermission(): Boolean {
@@ -34,6 +38,20 @@ class DefaultPermissionChecker(
         } else {
             true
         }
+    }
+
+    override fun hasSmsPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.SEND_SMS
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun hasCallPhonePermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CALL_PHONE
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun hasRequiredPermissions(): Boolean {

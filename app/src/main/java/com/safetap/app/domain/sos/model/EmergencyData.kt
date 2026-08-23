@@ -12,5 +12,6 @@ data class EmergencyData(
     val timestamp: Long = System.currentTimeMillis(),
     val status: SosStatus = SosStatus.PENDING,
     val isLastKnownLocation: Boolean = false,
+    val isApproximateLocation: Boolean = false,
     val emergencyMessage: String = "EMERGENCY: SafeTap user triggered an SOS alert. Immediate assistance required!"
 )

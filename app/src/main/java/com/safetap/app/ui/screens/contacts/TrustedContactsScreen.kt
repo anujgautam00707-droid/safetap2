@@ -1,7 +1,11 @@
 package com.safetap.app.ui.screens.contacts
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,6 +35,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Sms
+import androidx.compose.material.icons.filled.SmsFailed
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.PeopleAlt
@@ -53,6 +59,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -115,7 +122,45 @@ fun TrustedContactsScreen(
     viewModel: TrustedContactsViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val contactsList = remember { mutableStateListOf<Contact>().apply { addAll(InitialDummyContacts) } }
+
+    val smsPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        viewModel.onSmsPermissionResult(isGranted)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshPermissionState()
+    }
+
+    if (uiState.showSmsRationale) {
+        com.safetap.app.ui.components.PermissionRationaleDialog(
+            title = "SMS Emergency Broadcast",
+            description = "SafeTap sends automatic emergency SMS text messages with your live GPS coordinates to your trusted contacts when you trigger an SOS.\n\nGranting SMS permission ensures off-network alert delivery to your contacts.",
+            icon = Icons.Filled.Sms,
+            iconTint = Color(0xFF7B1FA2),
+            primaryButtonText = "Grant SMS Access",
+            onConfirm = {
+                viewModel.dismissSmsRationale()
+                smsPermissionLauncher.launch(Manifest.permission.SEND_SMS)
+            },
+            onDismiss = {
+                viewModel.dismissSmsRationale()
+            },
+            dismissButtonText = "Skip for Now",
+            showSettingsOption = uiState.showSmsSettingsRecovery,
+            onOpenSettings = {
+                viewModel.dismissSmsRationale()
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(intent)
+            }
+        )
+    }
 
     var showAddDialog by remember { mutableStateOf(false) }
     var contactToDelete by remember { mutableStateOf<Contact?>(null) }
@@ -355,6 +400,49 @@ fun TrustedContactsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+
+            if (!uiState.isSmsPermissionGranted) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            smsPermissionLauncher.launch(Manifest.permission.SEND_SMS)
+                        },
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = WarningAmber.copy(alpha = 0.12f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.SmsFailed,
+                            contentDescription = null,
+                            tint = WarningAmber,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Emergency SMS Inactive",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "SMS permission not granted. Contacts receive cloud alerts only. Tap to enable SMS.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
 

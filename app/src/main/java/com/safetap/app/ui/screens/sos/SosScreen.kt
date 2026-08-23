@@ -1,5 +1,12 @@
 package com.safetap.app.ui.screens.sos
 
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -30,7 +37,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.GpsFixed
+import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.Button
@@ -45,6 +54,7 @@ import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -54,12 +64,14 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.safetap.app.di.SafeTapViewModelFactory
+import com.safetap.app.ui.components.PermissionRationaleDialog
 import com.safetap.app.ui.theme.EmergencyRed
 import com.safetap.app.ui.theme.EmergencyRedContainer
 import com.safetap.app.ui.theme.EmergencyRedDark
@@ -68,14 +80,76 @@ import com.safetap.app.ui.theme.EmergencyWhite
 import com.safetap.app.ui.theme.SafeGreen
 import com.safetap.app.ui.theme.SafeGreenContainer
 import com.safetap.app.ui.theme.WarningAmber
+import com.safetap.app.ui.theme.WarningAmberContainer
 
 @Composable
 fun SosScreen(
     viewModel: SosViewModel = viewModel(factory = SafeTapViewModelFactory)
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val batteryPercentage by
-    viewModel.batteryPercentage.collectAsStateWithLifecycle()
+    val batteryPercentage by viewModel.batteryPercentage.collectAsStateWithLifecycle()
+    val isLocationGranted by viewModel.isLocationGranted.collectAsStateWithLifecycle()
+    val isLocationPrecise by viewModel.isLocationPrecise.collectAsStateWithLifecycle()
+    val isNotificationGranted by viewModel.isNotificationGranted.collectAsStateWithLifecycle()
+    val showLocationRationale by viewModel.showLocationRationale.collectAsStateWithLifecycle()
+    val showLocationSettingsRecovery by viewModel.showLocationSettingsRecovery.collectAsStateWithLifecycle()
+
+    // Permission Activity Result Launchers
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fine = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+        val coarse = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        viewModel.onLocationPermissionResult(hasFine = fine, hasCoarse = coarse)
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        viewModel.onNotificationPermissionResult(isGranted)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshPermissionStates()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !isNotificationGranted) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    // Permission Rationale Dialog for Location
+    if (showLocationRationale) {
+        PermissionRationaleDialog(
+            title = "Location Access for SOS",
+            description = "SafeTap requires location access to share your GPS position with emergency responders and trusted contacts during an SOS event.\n\nYou can choose either Precise or Approximate location.",
+            icon = Icons.Filled.GpsFixed,
+            iconTint = SafeGreen,
+            primaryButtonText = "Grant Location",
+            onConfirm = {
+                viewModel.dismissLocationRationale()
+                locationPermissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            },
+            onDismiss = {
+                viewModel.dismissLocationRationale()
+                viewModel.startCountdown()
+            },
+            dismissButtonText = "Continue Without GPS",
+            showSettingsOption = showLocationSettingsRecovery,
+            onOpenSettings = {
+                viewModel.dismissLocationRationale()
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(intent)
+            }
+        )
+    }
 
     val isCheckingPermissions =
         uiState == SosUiState.CheckingPermissions
@@ -356,7 +430,14 @@ fun SosScreen(
                         onClick = {
                             when (uiState) {
                                 SosUiState.Idle ->
-                                    viewModel.startSos()
+                                    viewModel.requestStartSos {
+                                        locationPermissionLauncher.launch(
+                                            arrayOf(
+                                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                                Manifest.permission.ACCESS_COARSE_LOCATION
+                                            )
+                                        )
+                                    }
 
                                 is SosUiState.Countdown ->
                                     viewModel.triggerImmediately()
@@ -491,7 +572,16 @@ fun SosScreen(
             }
         } else {
             OutlinedButton(
-                onClick = viewModel::startSos,
+                onClick = {
+                    viewModel.requestStartSos {
+                        locationPermissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            )
+                        )
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
@@ -510,6 +600,61 @@ fun SosScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Emergency Notification Warning (if denied on API 33+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !isNotificationGranted) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = WarningAmberContainer.copy(alpha = 0.5f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(WarningAmber.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.NotificationsOff,
+                                contentDescription = null,
+                                tint = WarningAmber,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "SOS Notifications Disabled",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Tap to enable status alerts on your device.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Dispatch Status Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -581,9 +726,9 @@ fun SosScreen(
 
                         Text(
                             text = if (isEmergencyActive) {
-                                "Alerting 3 trusted contacts with live audio & location"
+                                "Broadcasting emergency telemetry to contacts & cloud"
                             } else {
-                                "3 contacts will be alerted immediately on trigger"
+                                "Contacts will be alerted immediately on trigger"
                             },
                             style =
                                 MaterialTheme.typography.bodySmall,
@@ -594,15 +739,29 @@ fun SosScreen(
                 }
             }
 
+            // Dynamic Location Status Card
+            val activeEmergency = (uiState as? SosUiState.Active)?.emergencyData
+            val isLocationUnavailable = activeEmergency != null && activeEmergency.latitude == 0.0 && activeEmergency.longitude == 0.0
+            val isLocationApprox = (activeEmergency != null && activeEmergency.isApproximateLocation) || (!isLocationPrecise && isLocationGranted)
+
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (!isLocationGranted) {
+                            locationPermissionLauncher.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                )
+                            )
+                        }
+                    },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor =
-                        MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
-                elevation =
-                    CardDefaults.cardElevation(defaultElevation = 2.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -610,17 +769,32 @@ fun SosScreen(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val iconBgColor = when {
+                        !isLocationGranted || isLocationUnavailable -> EmergencyRedContainer
+                        isLocationApprox -> WarningAmberContainer
+                        else -> SafeGreenContainer
+                    }
+                    val iconTint = when {
+                        !isLocationGranted || isLocationUnavailable -> EmergencyRed
+                        isLocationApprox -> WarningAmber
+                        else -> SafeGreen
+                    }
+                    val iconVector = when {
+                        !isLocationGranted || isLocationUnavailable -> Icons.Filled.LocationOff
+                        else -> Icons.Filled.GpsFixed
+                    }
+
                     Box(
                         modifier = Modifier
                             .size(42.dp)
                             .clip(CircleShape)
-                            .background(SafeGreenContainer),
+                            .background(iconBgColor),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.GpsFixed,
+                            imageVector = iconVector,
                             contentDescription = null,
-                            tint = SafeGreen,
+                            tint = iconTint,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -628,33 +802,50 @@ fun SosScreen(
                     Spacer(modifier = Modifier.width(14.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Row(
-                            verticalAlignment =
-                                Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            val titleText = when {
+                                activeEmergency != null && isLocationUnavailable -> "Location Unavailable"
+                                activeEmergency != null && isLocationApprox -> "Approximate Location Active"
+                                activeEmergency != null -> "GPS Location Locked"
+                                isLocationGranted && isLocationPrecise -> "GPS Location Ready"
+                                isLocationGranted -> "Approximate Location Ready"
+                                else -> "Location Disabled"
+                            }
+
                             Text(
-                                text = "GPS Location Locked",
-                                style =
-                                    MaterialTheme.typography.titleMedium,
+                                text = titleText,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color =
-                                    MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Spacer(modifier = Modifier.width(6.dp))
 
+                            val badgeText = when {
+                                !isLocationGranted || isLocationUnavailable -> "NO GPS"
+                                isLocationApprox -> "APPROXIMATE"
+                                else -> "HIGH PRECISION"
+                            }
+                            val badgeBgColor = when {
+                                !isLocationGranted || isLocationUnavailable -> EmergencyRedContainer
+                                isLocationApprox -> WarningAmberContainer
+                                else -> SafeGreenContainer
+                            }
+                            val badgeTextColor = when {
+                                !isLocationGranted || isLocationUnavailable -> EmergencyRed
+                                isLocationApprox -> WarningAmber
+                                else -> SafeGreen
+                            }
+
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(SafeGreenContainer)
-                                    .padding(
-                                        horizontal = 6.dp,
-                                        vertical = 2.dp
-                                    )
+                                    .background(badgeBgColor)
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "HIGH PRECISION",
-                                    color = SafeGreen,
+                                    text = badgeText,
+                                    color = badgeTextColor,
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -663,18 +854,31 @@ fun SosScreen(
 
                         Spacer(modifier = Modifier.height(2.dp))
 
+                        val subtitleText = when {
+                            activeEmergency != null && isLocationUnavailable ->
+                                "Emergency triggered without GPS coordinates"
+                            activeEmergency != null && isLocationApprox ->
+                                "Lat: %.4f, Long: %.4f • Approximate area".format(activeEmergency.latitude, activeEmergency.longitude)
+                            activeEmergency != null ->
+                                "Lat: %.4f, Long: %.4f • Accuracy ±%.1fm".format(activeEmergency.latitude, activeEmergency.longitude, activeEmergency.locationAccuracy)
+                            isLocationGranted && isLocationPrecise ->
+                                "High-accuracy GPS locked for instant SOS telemetry"
+                            isLocationGranted ->
+                                "Coarse location active • Tap to enable high precision"
+                            else ->
+                                "Tap here to grant location permission for SOS GPS"
+                        }
+
                         Text(
-                            text =
-                                "37.7749° N, 122.4194° W • Accuracy ±3.5m",
-                            style =
-                                MaterialTheme.typography.bodySmall,
-                            color =
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                            text = subtitleText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
 
+            // Battery Status Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -737,4 +941,4 @@ fun SosScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
     }
-}
+}

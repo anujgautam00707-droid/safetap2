@@ -70,7 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.safetap.app.di.SafeTapViewModelFactory
+import com.safetap.app.di.RakshaViewModelFactory
 import com.safetap.app.ui.components.PermissionRationaleDialog
 import com.safetap.app.ui.theme.EmergencyRed
 import com.safetap.app.ui.theme.EmergencyRedContainer
@@ -84,7 +84,7 @@ import com.safetap.app.ui.theme.WarningAmberContainer
 
 @Composable
 fun SosScreen(
-    viewModel: SosViewModel = viewModel(factory = SafeTapViewModelFactory)
+    viewModel: SosViewModel = viewModel(factory = RakshaViewModelFactory)
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -941,4 +941,4 @@ fun SosScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
     }
-}
+}

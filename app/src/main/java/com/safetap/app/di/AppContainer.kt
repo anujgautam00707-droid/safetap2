@@ -108,8 +108,6 @@ object AppContainer {
             batteryProvider = batteryProvider,
             notificationManager = emergencyNotificationManager,
             callManager = emergencyCallManager,
-            emergencySmsSender = emergencySmsSender,
-            trustedContactsRepository = trustedContactsRepository,
             remoteDataSource = sosRemoteDataSource
         )
     }

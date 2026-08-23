@@ -40,7 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.safetap.app.di.SafeTapViewModelFactory
+import com.safetap.app.di.RakshaViewModelFactory
 import com.safetap.app.ui.components.EmailTextField
 import com.safetap.app.ui.components.PasswordTextField
 import com.safetap.app.ui.theme.EmergencyRed
@@ -50,7 +50,7 @@ import com.safetap.app.ui.theme.EmergencyWhite
 fun SignUpScreen(
     onSignUpSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit,
-    viewModel: AuthViewModel = viewModel(factory = SafeTapViewModelFactory)
+    viewModel: AuthViewModel = viewModel(factory = RakshaViewModelFactory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -114,7 +114,7 @@ fun SignUpScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Join SafeTap to protect yourself and loved ones",
+                    text = "Join Raksha to protect yourself and loved ones",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )

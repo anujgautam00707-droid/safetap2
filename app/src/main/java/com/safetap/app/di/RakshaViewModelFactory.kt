@@ -8,7 +8,7 @@ import com.safetap.app.ui.screens.settings.SettingsViewModel
 import com.safetap.app.ui.screens.sos.SosViewModel
 import com.safetap.app.ui.screens.splash.SplashViewModel
 
-object SafeTapViewModelFactory : ViewModelProvider.Factory {
+object RakshaViewModelFactory : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val authRepo = AppContainer.authRepository

@@ -21,7 +21,7 @@ class DefaultEmergencyNotificationManager(
     companion object {
         const val SOS_NOTIFICATION_ID = 9119
         const val CHANNEL_ID = "safetap_emergency_channel"
-        const val CHANNEL_NAME = "SafeTap Emergency Alerts"
+        const val CHANNEL_NAME = "Raksha Emergency Alerts"
     }
 
     private val notificationManager by lazy {
@@ -39,7 +39,7 @@ class DefaultEmergencyNotificationManager(
                 CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "High priority notifications triggered during active SafeTap SOS emergencies."
+                description = "High priority notifications triggered during active Raksha SOS emergencies."
                 enableLights(true)
                 enableVibration(true)
             }
@@ -73,11 +73,11 @@ class DefaultEmergencyNotificationManager(
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("🚨 SafeTap SOS Alert ACTIVE")
+            .setContentTitle("🚨 Raksha SOS Alert ACTIVE")
             .setContentText("Emergency broadcast in progress. $locationText")
             .setStyle(
                 NotificationCompat.BigTextStyle()
-                    .bigText("SafeTap is actively broadcasting your emergency status and GPS location to your trusted contacts.\n$locationText\nBattery: ${emergencyData.batteryPercentage}%")
+                    .bigText("Raksha is actively broadcasting your emergency status and GPS location to your trusted contacts.\n$locationText\nBattery: ${emergencyData.batteryPercentage}%")
             )
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)

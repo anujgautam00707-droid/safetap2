@@ -21,15 +21,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material3.AlertDialog
@@ -37,14 +33,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -64,9 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.safetap.app.di.SafeTapViewModelFactory
+import com.safetap.app.di.RakshaViewModelFactory
 import com.safetap.app.ui.theme.EmergencyRed
-import com.safetap.app.ui.theme.EmergencyRedContainer
 import com.safetap.app.ui.theme.EmergencyWhite
 import com.safetap.app.ui.theme.SafeGreen
 import com.safetap.app.ui.theme.SafeGreenContainer
@@ -75,7 +68,7 @@ import com.safetap.app.ui.theme.WarningAmber
 @Composable
 fun SettingsScreen(
     onLoggedOut: () -> Unit = {},
-    viewModel: SettingsViewModel = viewModel(factory = SafeTapViewModelFactory)
+    viewModel: SettingsViewModel = viewModel(factory = RakshaViewModelFactory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -113,7 +106,7 @@ fun SettingsScreen(
                 )
             },
             text = {
-                Text("Are you sure you want to sign out of SafeTap? You will need to log in again to use live emergency broadcasts.")
+                Text("Are you sure you want to sign out of Raksha? You will need to log in again to use live emergency broadcasts.")
             },
             confirmButton = {
                 Button(
@@ -245,11 +238,11 @@ fun SettingsScreen(
                     modifier = Modifier.size(36.dp)
                 )
             },
-            title = { Text("About SafeTap", fontWeight = FontWeight.Bold) },
+            title = { Text("About Raksha", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "SafeTap Personal Safety",
+                        text = "Raksha Personal Safety",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -260,7 +253,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "© 2026 SafeTap Safety Inc. All rights reserved.",
+                        text = "© 2026 Raksha Safety Inc. All rights reserved.",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
@@ -370,7 +363,7 @@ fun SettingsScreen(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = uiState.userEmail.ifBlank { "SafeTap User" },
+                        text = uiState.userEmail.ifBlank { "Raksha User" },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -476,7 +469,7 @@ fun SettingsScreen(
             SettingsClickableRow(
                 icon = Icons.Filled.Shield,
                 iconTint = MaterialTheme.colorScheme.primary,
-                title = "About SafeTap",
+                title = "About Raksha",
                 subtitle = "Version 1.0.4 (Build 2026.1)",
                 onClick = { showAboutDialog = true }
             )

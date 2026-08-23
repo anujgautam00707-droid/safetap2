@@ -119,7 +119,7 @@ class SosCoordinator(
                 status = SosStatus.ACTIVE,
                 isLastKnownLocation = isLastKnownLocation,
                 emergencyMessage = emergencyMessage
-                    ?: "EMERGENCY: SafeTap user triggered an SOS alert. Immediate assistance required!"
+                    ?: "EMERGENCY: Raksha user triggered an SOS alert. Immediate assistance required!"
             )
 
             notificationManager.showActiveSosNotification(

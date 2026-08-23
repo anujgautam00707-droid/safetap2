@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.safetap.app.ui.components.SafeTapScaffold
+import com.safetap.app.ui.components.RakshaScaffold
 import com.safetap.app.ui.screens.auth.ForgotPasswordScreen
 import com.safetap.app.ui.screens.auth.SignUpScreen
 import com.safetap.app.ui.screens.contacts.TrustedContactsScreen
@@ -17,11 +17,11 @@ import com.safetap.app.ui.screens.sos.SosScreen
 import com.safetap.app.ui.screens.splash.SplashScreen
 
 @Composable
-fun SafeTapNavHost(
+fun RakshaNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    SafeTapScaffold(navController = navController) { innerPadding ->
+    RakshaScaffold(navController = navController) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Routes.Splash,

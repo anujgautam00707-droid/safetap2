@@ -11,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Repository handling authentication operations in SafeTap.
+ * Repository handling authentication operations in Raksha.
  * Converts lower-level Firebase SDK operations into domain-friendly AuthOutcome results.
  */
 class AuthRepository(

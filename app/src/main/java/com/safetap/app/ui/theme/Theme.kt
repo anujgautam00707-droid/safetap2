@@ -58,7 +58,7 @@ private val DarkEmergencyScheme = darkColorScheme(
 )
 
 @Composable
-fun SafeTapTheme(
+fun RakshaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {

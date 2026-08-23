@@ -5,38 +5,28 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-
-    <uses-feature
-        android:name="android.hardware.telephony"
-        android:required="false" />
 
     <application
-        android:name=".SafeTapApp"
+        android:name=".RakshaApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/chatgpt_image_aug_23__2026__02_05_17_pm"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/chatgpt_image_aug_23__2026__02_05_17_pm"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SafeTap">
-
+        android:theme="@style/Theme.Raksha">
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.SafeTap"
+            android:theme="@style/Theme.Raksha"
             android:windowSoftInputMode="adjustResize">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>

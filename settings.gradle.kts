@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SafeTap"
+rootProject.name = "raksha"
 include(":app")

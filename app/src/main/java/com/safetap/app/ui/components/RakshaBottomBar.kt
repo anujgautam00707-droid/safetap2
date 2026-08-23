@@ -21,10 +21,9 @@ import androidx.navigation.NavHostController
 import com.safetap.app.navigation.mainBottomNavItems
 import com.safetap.app.ui.theme.EmergencyRed
 import com.safetap.app.ui.theme.EmergencyRedContainer
-import com.safetap.app.ui.theme.EmergencyWhite
 
 @Composable
-fun SafeTapBottomBar(
+fun RakshaBottomBar(
     navController: NavHostController,
     currentDestination: NavDestination?,
     modifier: Modifier = Modifier

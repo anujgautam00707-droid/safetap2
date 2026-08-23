@@ -38,7 +38,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.safetap.app.di.SafeTapViewModelFactory
+import com.safetap.app.di.RakshaViewModelFactory
 import com.safetap.app.ui.components.EmailTextField
 import com.safetap.app.ui.theme.EmergencyRed
 import com.safetap.app.ui.theme.EmergencyWhite
@@ -46,7 +46,7 @@ import com.safetap.app.ui.theme.EmergencyWhite
 @Composable
 fun ForgotPasswordScreen(
     onNavigateBackToLogin: () -> Unit,
-    viewModel: AuthViewModel = viewModel(factory = SafeTapViewModelFactory)
+    viewModel: AuthViewModel = viewModel(factory = RakshaViewModelFactory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }

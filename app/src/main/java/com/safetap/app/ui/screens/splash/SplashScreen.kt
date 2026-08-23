@@ -27,7 +27,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.safetap.app.di.SafeTapViewModelFactory
+import com.safetap.app.di.RakshaViewModelFactory
 import com.safetap.app.ui.theme.EmergencyRed
 import com.safetap.app.ui.theme.EmergencyWhite
 
@@ -35,7 +35,7 @@ import com.safetap.app.ui.theme.EmergencyWhite
 fun SplashScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToLogin: () -> Unit,
-    viewModel: SplashViewModel = viewModel(factory = SafeTapViewModelFactory)
+    viewModel: SplashViewModel = viewModel(factory = RakshaViewModelFactory)
 ) {
     val navState by viewModel.navigationState.collectAsStateWithLifecycle()
 
@@ -67,7 +67,7 @@ fun SplashScreen(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 imageVector = Icons.Filled.Sos,
-                contentDescription = "SafeTap Logo",
+                contentDescription = "Raksha Logo",
                 tint = EmergencyWhite,
                 modifier = Modifier
                     .size(96.dp)
@@ -75,7 +75,7 @@ fun SplashScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "SafeTap",
+                text = "Raksha",
                 style = MaterialTheme.typography.headlineLarge,
                 color = EmergencyWhite
             )

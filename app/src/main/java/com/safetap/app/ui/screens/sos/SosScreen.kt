@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.safetap.app.di.SafeTapViewModelFactory
+import com.safetap.app.di.RakshaViewModelFactory
 import com.safetap.app.ui.theme.EmergencyRed
 import com.safetap.app.ui.theme.EmergencyRedContainer
 import com.safetap.app.ui.theme.EmergencyRedDark
@@ -71,7 +71,7 @@ import com.safetap.app.ui.theme.WarningAmber
 
 @Composable
 fun SosScreen(
-    viewModel: SosViewModel = viewModel(factory = SafeTapViewModelFactory)
+    viewModel: SosViewModel = viewModel(factory = RakshaViewModelFactory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val batteryPercentage by

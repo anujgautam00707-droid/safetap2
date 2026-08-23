@@ -7,17 +7,17 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.safetap.app.navigation.SafeTapNavHost
-import com.safetap.app.ui.theme.SafeTapTheme
+import com.safetap.app.navigation.RakshaNavHost
+import com.safetap.app.ui.theme.RakshaTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SafeTapTheme {
+            RakshaTheme {
                 val navController = rememberNavController()
-                SafeTapNavHost(
+                RakshaNavHost(
                     navController = navController,
                     modifier = Modifier.fillMaxSize()
                 )

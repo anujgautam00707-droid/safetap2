@@ -69,44 +69,44 @@ class SosCoordinator(
 
     /**
      * Collects emergency data and dispatches the SOS event.
-     * Activates SOS independently even if location is unavailable or permissions are limited.
      */
     suspend fun triggerSos(
         userId: String = "user_placeholder",
         emergencyMessage: String? = null
     ): Result<EmergencyData> = withContext(ioDispatcher) {
         try {
-            val hasLocation = permissionChecker.hasLocationPermission()
-            val locationResult = if (hasLocation) {
+            if (!permissionChecker.hasLocationPermission()) {
+                return@withContext Result.failure(
+                    SosError.PermissionDenied()
+                )
+            }
+
+            if (!locationProvider.isGpsEnabled()) {
+                val lastKnownLocation =
+                    locationProvider.getLastKnownLocation()
+
+                if (lastKnownLocation == null) {
+                    return@withContext Result.failure(
+                        SosError.GpsDisabled()
+                    )
+                }
+            }
+
+            val locationResult =
                 locationProvider.getBestAvailableLocation()
                     ?: locationProvider.getLastKnownLocation()
-            } else {
-                null
-            }
 
             val latitude = locationResult?.latitude ?: 0.0
             val longitude = locationResult?.longitude ?: 0.0
             val accuracy = locationResult?.accuracy ?: 0.0f
             val isLastKnownLocation =
                 locationResult?.isLastKnownLocation ?: false
-            val isApproximateLocation =
-                locationResult?.isApproximate
-                    ?: (!permissionChecker.hasFineLocationPermission() && hasLocation)
 
             val batteryPercentage =
                 batteryProvider.getBatteryPercentage()
 
             val sosId = UUID.randomUUID().toString()
             currentActiveSosId = sosId
-
-            val defaultMessage = when {
-                !hasLocation ->
-                    "EMERGENCY: SafeTap user triggered an SOS alert. Immediate assistance required! (Location unavailable: permission not granted)"
-                isApproximateLocation ->
-                    "EMERGENCY: SafeTap user triggered an SOS alert. Immediate assistance required! (Approximate location)"
-                else ->
-                    "EMERGENCY: SafeTap user triggered an SOS alert. Immediate assistance required!"
-            }
 
             val emergencyData = EmergencyData(
                 sosId = sosId,
@@ -118,8 +118,8 @@ class SosCoordinator(
                 timestamp = System.currentTimeMillis(),
                 status = SosStatus.ACTIVE,
                 isLastKnownLocation = isLastKnownLocation,
-                isApproximateLocation = isApproximateLocation,
-                emergencyMessage = emergencyMessage ?: defaultMessage
+                emergencyMessage = emergencyMessage
+                    ?: "EMERGENCY: Raksha user triggered an SOS alert. Immediate assistance required!"
             )
 
             notificationManager.showActiveSosNotification(

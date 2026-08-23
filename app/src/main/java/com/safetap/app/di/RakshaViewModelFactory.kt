@@ -18,13 +18,11 @@ object RakshaViewModelFactory : ViewModelProvider.Factory {
             modelClass.isAssignableFrom(SplashViewModel::class.java) ->
                 SplashViewModel(authRepo) as T
             modelClass.isAssignableFrom(SettingsViewModel::class.java) ->
-                SettingsViewModel(authRepo, AppContainer.permissionChecker) as T
+                SettingsViewModel(authRepo) as T
             modelClass.isAssignableFrom(HomeViewModel::class.java) ->
                 HomeViewModel(authRepo) as T
             modelClass.isAssignableFrom(SosViewModel::class.java) ->
-                SosViewModel(AppContainer.sosCoordinator, authRepo, AppContainer.permissionChecker) as T
-            modelClass.isAssignableFrom(com.safetap.app.ui.screens.contacts.TrustedContactsViewModel::class.java) ->
-                com.safetap.app.ui.screens.contacts.TrustedContactsViewModel(AppContainer.permissionChecker) as T
+                SosViewModel(AppContainer.sosCoordinator, authRepo) as T
             else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
         }
     }

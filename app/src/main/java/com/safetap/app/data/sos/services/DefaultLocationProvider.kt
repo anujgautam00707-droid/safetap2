@@ -142,14 +142,12 @@ class DefaultLocationProvider(
     }
 
     private fun Location.toLocationResult(isLastKnown: Boolean): LocationResult {
-        val isApproximate = !permissionChecker.hasFineLocationPermission() || accuracy > 100f
         return LocationResult(
             latitude = latitude,
             longitude = longitude,
             accuracy = accuracy,
             isLastKnownLocation = isLastKnown,
-            timestamp = time,
-            isApproximate = isApproximate
+            timestamp = time
         )
     }
 }

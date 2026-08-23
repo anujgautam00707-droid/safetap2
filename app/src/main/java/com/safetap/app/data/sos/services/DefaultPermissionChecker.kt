@@ -8,31 +8,43 @@ import androidx.core.content.ContextCompat
 import com.safetap.app.domain.sos.services.PermissionChecker
 
 class DefaultPermissionChecker(
-    private val context: Context
+    context: Context
 ) : PermissionChecker {
 
+    private val appContext = context.applicationContext
+
     override fun hasLocationPermission(): Boolean {
-        return hasFineLocationPermission() || hasCoarseLocationPermission()
+        val hasFineLocation = ContextCompat.checkSelfPermission(
+            appContext,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val hasCoarseLocation = ContextCompat.checkSelfPermission(
+            appContext,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        return hasFineLocation || hasCoarseLocation
     }
 
-    override fun hasFineLocationPermission(): Boolean {
+    override fun hasSmsPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
+            appContext,
+            Manifest.permission.SEND_SMS
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    override fun hasCoarseLocationPermission(): Boolean {
+    override fun hasCallPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            appContext,
+            Manifest.permission.CALL_PHONE
         ) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun hasNotificationPermission(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(
-                context,
+                appContext,
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         } else {
@@ -40,21 +52,9 @@ class DefaultPermissionChecker(
         }
     }
 
-    override fun hasSmsPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.SEND_SMS
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    override fun hasCallPhonePermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.CALL_PHONE
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
     override fun hasRequiredPermissions(): Boolean {
-        return hasLocationPermission()
+        return hasLocationPermission() &&
+                hasSmsPermission() &&
+                hasCallPermission()
     }
 }

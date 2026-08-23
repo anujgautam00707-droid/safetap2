@@ -9,7 +9,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.safetap.app.navigation.Routes
 
 @Composable
-fun SafeTapScaffold(
+fun RakshaScaffold(
     navController: NavHostController,
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -25,7 +25,7 @@ fun SafeTapScaffold(
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                SafeTapBottomBar(
+                RakshaBottomBar(
                     navController = navController,
                     currentDestination = navBackStackEntry?.destination
                 )

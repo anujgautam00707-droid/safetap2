@@ -40,7 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.safetap.app.di.SafeTapViewModelFactory
+import com.safetap.app.di.RakshaViewModelFactory
 import com.safetap.app.ui.components.EmailTextField
 import com.safetap.app.ui.components.PasswordTextField
 import com.safetap.app.ui.screens.auth.AuthEvent
@@ -53,7 +53,7 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onNavigateToSignUp: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
-    viewModel: AuthViewModel = viewModel(factory = SafeTapViewModelFactory)
+    viewModel: AuthViewModel = viewModel(factory = RakshaViewModelFactory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -90,7 +90,7 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // SafeTap Brand Icon
+                // Raksha Brand Icon
                 Box(
                     modifier = Modifier
                         .size(72.dp)
@@ -100,7 +100,7 @@ fun LoginScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Shield,
-                        contentDescription = "SafeTap Icon",
+                        contentDescription = "Raksha Icon",
                         tint = EmergencyWhite,
                         modifier = Modifier.size(40.dp)
                     )
@@ -109,7 +109,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    text = "Welcome to SafeTap",
+                    text = "Welcome to Raksha",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )

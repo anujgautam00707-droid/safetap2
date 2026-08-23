@@ -1,5 +1,12 @@
 package com.safetap.app.ui.screens.settings
 
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,29 +28,38 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,13 +69,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.safetap.app.di.RakshaViewModelFactory
+import com.safetap.app.di.SafeTapViewModelFactory
 import com.safetap.app.ui.theme.EmergencyRed
+import com.safetap.app.ui.theme.EmergencyRedContainer
 import com.safetap.app.ui.theme.EmergencyWhite
 import com.safetap.app.ui.theme.SafeGreen
 import com.safetap.app.ui.theme.SafeGreenContainer
@@ -68,9 +86,46 @@ import com.safetap.app.ui.theme.WarningAmber
 @Composable
 fun SettingsScreen(
     onLoggedOut: () -> Unit = {},
-    viewModel: SettingsViewModel = viewModel(factory = RakshaViewModelFactory)
+    viewModel: SettingsViewModel = viewModel(factory = SafeTapViewModelFactory)
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val locationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        viewModel.refreshPermissions()
+    }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        viewModel.refreshPermissions()
+    }
+
+    val smsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        viewModel.refreshPermissions()
+    }
+
+    val callLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        viewModel.refreshPermissions()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshPermissions()
+    }
+
+    fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", context.packageName, null)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
+    }
 
     // Local UI-only state settings
     var isDarkMode by remember { mutableStateOf(false) }
@@ -106,7 +161,7 @@ fun SettingsScreen(
                 )
             },
             text = {
-                Text("Are you sure you want to sign out of Raksha? You will need to log in again to use live emergency broadcasts.")
+                Text("Are you sure you want to sign out of SafeTap? You will need to log in again to use live emergency broadcasts.")
             },
             confirmButton = {
                 Button(
@@ -238,11 +293,11 @@ fun SettingsScreen(
                     modifier = Modifier.size(36.dp)
                 )
             },
-            title = { Text("About Raksha", fontWeight = FontWeight.Bold) },
+            title = { Text("About SafeTap", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Raksha Personal Safety",
+                        text = "SafeTap Personal Safety",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -253,7 +308,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "© 2026 Raksha Safety Inc. All rights reserved.",
+                        text = "© 2026 SafeTap Safety Inc. All rights reserved.",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
@@ -363,7 +418,7 @@ fun SettingsScreen(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = uiState.userEmail.ifBlank { "Raksha User" },
+                        text = uiState.userEmail.ifBlank { "SafeTap User" },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -436,6 +491,107 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        // Section: System Permissions & Safety Capabilities
+        SettingsSectionHeader("PERMISSIONS & PRIVACY")
+
+        SettingsCardGroup {
+            SettingsClickableRow(
+                icon = Icons.Filled.LocationOn,
+                iconTint = if (uiState.hasLocationPermission) SafeGreen else EmergencyRed,
+                title = "Location Tracking",
+                subtitle = when {
+                    uiState.hasLocationPermission && uiState.hasFineLocationPermission -> "High precision GPS active"
+                    uiState.hasLocationPermission -> "Approximate location active"
+                    else -> "Disabled • Required for GPS emergency dispatch"
+                },
+                onClick = {
+                    if (uiState.hasLocationPermission) {
+                        openAppSettings()
+                    } else {
+                        locationLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            )
+                        )
+                    }
+                }
+            )
+
+            SettingsDivider()
+
+            SettingsClickableRow(
+                icon = Icons.Filled.Notifications,
+                iconTint = if (uiState.hasNotificationPermission) MaterialTheme.colorScheme.primary else WarningAmber,
+                title = "Emergency Notifications",
+                subtitle = if (uiState.hasNotificationPermission)
+                    "Active • High priority alerts enabled"
+                else
+                    "Disabled • Tap to enable lock screen notifications",
+                onClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (uiState.hasNotificationPermission) {
+                            openAppSettings()
+                        } else {
+                            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    } else {
+                        openAppSettings()
+                    }
+                }
+            )
+
+            SettingsDivider()
+
+            SettingsClickableRow(
+                icon = Icons.Filled.Sms,
+                iconTint = if (uiState.hasSmsPermission) Color(0xFF7B1FA2) else WarningAmber,
+                title = "Emergency SMS Broadcast",
+                subtitle = if (uiState.hasSmsPermission)
+                    "Active • Direct text alerts enabled"
+                else
+                    "Disabled • Tap to enable SMS contact dispatch",
+                onClick = {
+                    if (uiState.hasSmsPermission) {
+                        openAppSettings()
+                    } else {
+                        smsLauncher.launch(Manifest.permission.SEND_SMS)
+                    }
+                }
+            )
+
+            SettingsDivider()
+
+            SettingsClickableRow(
+                icon = Icons.Filled.Call,
+                iconTint = if (uiState.hasCallPhonePermission) SafeGreen else MaterialTheme.colorScheme.primary,
+                title = "Direct Call Permission",
+                subtitle = if (uiState.hasCallPhonePermission)
+                    "Active • Automatic emergency dialing"
+                else
+                    "Safe Mode • Uses system dialer (ACTION_DIAL)",
+                onClick = {
+                    if (uiState.hasCallPhonePermission) {
+                        openAppSettings()
+                    } else {
+                        callLauncher.launch(Manifest.permission.CALL_PHONE)
+                    }
+                }
+            )
+
+            SettingsDivider()
+
+            SettingsClickableRow(
+                icon = Icons.Filled.Settings,
+                iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
+                title = "Android App Settings",
+                subtitle = "Manage all app permissions directly in Android Settings",
+                onClick = { openAppSettings() }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
         // Section: Appearance & Localization
         SettingsSectionHeader("APP PREFERENCES")
 
@@ -469,7 +625,7 @@ fun SettingsScreen(
             SettingsClickableRow(
                 icon = Icons.Filled.Shield,
                 iconTint = MaterialTheme.colorScheme.primary,
-                title = "About Raksha",
+                title = "About SafeTap",
                 subtitle = "Version 1.0.4 (Build 2026.1)",
                 onClick = { showAboutDialog = true }
             )
